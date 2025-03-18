@@ -1,6 +1,6 @@
 ---
 - name: Communicate with aap
-  hosts: localhost
+  hosts: 3.136.166.24
   connection: local
   gather_facts: true
   vars:
