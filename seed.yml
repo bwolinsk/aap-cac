@@ -1,0 +1,58 @@
+---
+- name: Communicate with aap
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    controller_configuration_projects_async_retries: 60
+    controller_configuration_projects_async_delay: 5
+    aap_username: "{{ vault_controller_username | default(lookup('env', 'CONTROLLER_USERNAME')) }}"
+    aap_password: "{{ vault_controller_password | default(lookup('env', 'CONTROLLER_PASSWORD')) }}"
+    aap_hostname: "{{ vault_controller_hostname | default(lookup('env', 'CONTROLLER_HOST')) }}"
+    aap_validate_certs: "{{ vault_controller_validate_certs | default(lookup('env', 'CONTROLLER_VERIFY_SSL')) }}"
+    controller_hostname: "{{ vault_controller_hostname | default(lookup('env', 'CONTROLLER_HOST')) }}"
+    controller_validate_certs: "{{ vault_controller_validate_certs | default(lookup('env', 'CONTROLLER_VERIFY_SSL')) }}"
+
+  pre_tasks:
+    - name: "Setup authentication"
+      block:
+        - name: Get the Authentication Token for the future requests
+          ansible.platform.token:
+            description: Create a token for platform authentication
+            scope: write
+            state: present
+            gateway_hostname: "{{ aap_hostname }}"
+            gateway_username: "{{ aap_username }}"
+            gateway_password: "{{ aap_password }}"
+            gateway_validate_certs: "{{ aap_validate_certs }}"
+          register: authtoken_res
+
+        - name: "Print message"
+          ansible.builtin.set_fact:
+            var: "{{ authtoken_res.ansible_facts }}"
+          ansible.builtin.set_fact:
+            var: "{{ aaap_hostname }}"
+
+        - name: "Set the oauth token to be used"
+          ansible.builtin.set_fact:
+            controller_oauthtoken: "{{ authtoken_res.ansible_facts.aap_token.token }}"
+            aap_token: "{{ authtoken_res.ansible_facts.aap_token.token }}"
+            aap_oauthtoken: "{{ authtoken_res.ansible_facts.aap_token.token }}"
+      when: controller_oauthtoken is not defined
+      tags:
+        - always
+
+ 
+
+  post_tasks:
+    - name: "Delete the Authentication Token used"
+      ansible.builtin.uri:
+        url: "https://{{ aap_hostname }}{{ aap_oauthtoken_url }}"
+        user: "{{ aap_username }}"
+        password: "{{ aap_password }}"
+        method: DELETE
+        force_basic_auth: true
+        validate_certs: "{{ aap_validate_certs }}"
+        status_code: 204
+      when: aap_oauthtoken_url is defined
+...

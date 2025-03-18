@@ -1,0 +1,5 @@
+---
+all:
+  hosts:
+    ec2-host:
+      ansible_host: 3.136.166.24

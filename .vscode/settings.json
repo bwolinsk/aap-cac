@@ -1,3 +1,6 @@
 {
-    "ansible.python.interpreterPath": "/usr/bin/python"
+    "ansible.python.interpreterPath": "/usr/bin/python",
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/inventory.json": "file:///home/bwolinski/ansible/aap-cac/collections/ansible_collections/infra/controller_configuration/roles/filetree_create/tasks/inventory.yml"
+    }
 }
